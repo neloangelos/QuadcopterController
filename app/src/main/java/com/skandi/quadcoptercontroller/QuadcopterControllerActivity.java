@@ -19,7 +19,7 @@ public class QuadcopterControllerActivity extends Activity {
         setContentView(R.layout.activity_quadcopter_controller);
         angleTextView = (TextView) findViewById(R.id.angleTextView);
         powerTextView = (TextView) findViewById(R.id.powerTextView);
-        joystick = (JoystickView) findViewById(R.id.JoystickView);
+        joystick = (JoystickView) findViewById(R.id.JoystickViewleft);
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
             @Override
             public void onValueChanged(int angle, int power, int direction) {
