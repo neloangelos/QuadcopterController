@@ -17,14 +17,15 @@ public class QuadcopterControllerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quadcopter_controller);
-        angleTextView = (TextView) findViewById(R.id.angleTextView);
-        powerTextView = (TextView) findViewById(R.id.powerTextView);
-        joystick = (JoystickView) findViewById(R.id.JoystickViewleft);
+        angleTextView = (TextView) findViewById(R.id.angleTextViewLeft);
+        powerTextView = (TextView) findViewById(R.id.powerTextViewLeft);
+        joystick = (JoystickView) findViewById(R.id.JoystickViewLeft);
+        joystick.setYisAutoCenter(false);
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
             @Override
-            public void onValueChanged(int angle, int power, int direction) {
-                angleTextView.setText("Angle:" + String.valueOf(angle) + "°");
-                powerTextView.setText("Power:" + String.valueOf(power) + "%");
+            public void onValueChanged(int xPosition, int yPosition) {
+                angleTextView.setText("xPosition:" + String.valueOf(xPosition) + "°");
+                powerTextView.setText("yPosition:" + String.valueOf(yPosition) + "%");
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
     }

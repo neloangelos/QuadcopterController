@@ -6,33 +6,45 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".QuadcopterControllerActivity">
 
-
-    <com.skandi.quadcoptercontroller.JoystickView
-        android:layout_alignParentTop="true"
-        android:id = "@+id/JoystickViewleft"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
-    <com.skandi.quadcoptercontroller.JoystickView
-        android:layout_alignParentTop="true"
-        android:id = "@+id/JoystickViewright"
-        android:layout_toRightOf="@+id/JoystickViewleft"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
-
     <TextView android:text="@string/hello_world"
-        android:layout_below="@+id/JoystickViewleft"
-        android:id="@+id/angleTextView"
-        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:id="@+id/angleTextViewLeft"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <TextView android:text="@string/hello_world"
-        android:id="@+id/powerTextView"
-        android:layout_below="@+id/angleTextView"
-        android:layout_centerHorizontal="true"
+        android:id="@+id/powerTextViewLeft"
+        android:layout_below="@+id/angleTextViewLeft"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <TextView android:text="@string/hello_world"
+        android:layout_alignParentTop="true"
+        android:id="@+id/angleTextViewRight"
+        android:layout_toRightOf="@+id/angleTextViewLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView android:text="@string/hello_world"
+        android:id="@+id/powerTextViewRight"
+        android:layout_toRightOf="@+id/angleTextViewLeft"
+        android:layout_below="@+id/angleTextViewRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <com.skandi.quadcoptercontroller.JoystickView
+        android:id = "@+id/JoystickViewLeft"
+        android:layout_below="@+id/powerTextViewLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+    <com.skandi.quadcoptercontroller.JoystickView
+        android:id = "@+id/JoystickViewRight"
+        android:layout_below="@+id/powerTextViewRight"
+        android:layout_toRightOf="@+id/JoystickViewLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
 
 </RelativeLayout>
