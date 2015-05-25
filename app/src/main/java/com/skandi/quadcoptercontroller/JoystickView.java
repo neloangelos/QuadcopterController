@@ -41,6 +41,10 @@ public class JoystickView extends View implements Runnable {
     private int lastAngle = 0;
     private int lastPower = 0;
 
+
+    private boolean XisAutoCenter = true;
+    private boolean YisAutoCenter = true;
+
     public JoystickView(Context context) {
         super(context);
     }
@@ -150,20 +154,25 @@ public class JoystickView extends View implements Runnable {
     public boolean onTouchEvent(MotionEvent event) {
         xPosition = (int) event.getX();
         yPosition = (int) event.getY();
-        double abs = Math.sqrt((xPosition - centerX) * (xPosition - centerX)
+/*        double abs = Math.sqrt((xPosition - centerX) * (xPosition - centerX)
                 + (yPosition - centerY) * (yPosition - centerY));
         if (abs > joystickRadius) {
             xPosition = (int) ((xPosition - centerX) * joystickRadius / abs + centerX);
             yPosition = (int) ((yPosition - centerY) * joystickRadius / abs + centerY);
-        }
+        }*/
+        if(xPosition-centerX > joystickRadius) xPosition = (int)centerX + joystickRadius;
+        if(xPosition-centerX < joystickRadius*-1) xPosition = (int)centerX - joystickRadius;
+        if(yPosition-centerY > joystickRadius) yPosition = (int)centerY + joystickRadius;
+        if(yPosition-centerY < joystickRadius*-1) yPosition = (int)centerY - joystickRadius;
         invalidate();
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            xPosition = (int) centerX;
-            yPosition = (int) centerY;
+            if(XisAutoCenter) xPosition = (int) centerX;
+            if(YisAutoCenter) yPosition = (int) centerY;
             thread.interrupt();
             if (onJoystickMoveListener != null)
-                onJoystickMoveListener.onValueChanged(getAngle(), getPower(),
-                        getDirection());
+//                onJoystickMoveListener.onValueChanged(getAngle(), getPower(),
+//                        getDirection());
+                onJoystickMoveListener.onValueChanged(xPosition-(int)centerX,yPosition-(int)centerY);
         }
         if (onJoystickMoveListener != null
                 && event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -173,10 +182,20 @@ public class JoystickView extends View implements Runnable {
             thread = new Thread(this);
             thread.start();
             if (onJoystickMoveListener != null)
-                onJoystickMoveListener.onValueChanged(getAngle(), getPower(),
-                        getDirection());
+//                onJoystickMoveListener.onValueChanged(getAngle(), getPower(),
+//                        getDirection());
+                onJoystickMoveListener.onValueChanged(xPosition-(int)centerX,yPosition-(int)centerY);
         }
         return true;
+    }
+
+
+    public void setXisAutoCenter(boolean xisAutoCenter) {
+        XisAutoCenter = xisAutoCenter;
+    }
+
+    public void setYisAutoCenter(boolean yisAutoCenter) {
+        YisAutoCenter = yisAutoCenter;
     }
 
     private int getAngle() {
@@ -251,8 +270,10 @@ public class JoystickView extends View implements Runnable {
     }
 
     public static interface OnJoystickMoveListener {
-        public void onValueChanged(int angle, int power, int direction);
+       // public void onValueChanged(int angle, int power, int direction);
+        public void onValueChanged(int xPosition,int yPosition);
     }
+
 
     @Override
     public void run() {
@@ -260,8 +281,9 @@ public class JoystickView extends View implements Runnable {
             post(new Runnable() {
                 public void run() {
                     if (onJoystickMoveListener != null)
-                        onJoystickMoveListener.onValueChanged(getAngle(),
-                                getPower(), getDirection());
+//                        onJoystickMoveListener.onValueChanged(getAngle(),
+//                                getPower(), getDirection());
+                            onJoystickMoveListener.onValueChanged(xPosition-(int)centerX,yPosition-(int)centerY);
                 }
             });
             try {
