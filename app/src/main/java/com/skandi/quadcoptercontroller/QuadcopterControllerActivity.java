@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class QuadcopterControllerActivity extends Activity {
@@ -24,6 +25,7 @@ public class QuadcopterControllerActivity extends Activity {
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+    public static final int REQUEST_CODE = 1;
 
     private String mDeviceName;
     private String mDeviceAddress;
@@ -34,14 +36,18 @@ public class QuadcopterControllerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quadcopter_controller);
-        angleTextView = (TextView) findViewById(R.id.angleTextView);
-        powerTextView = (TextView) findViewById(R.id.powerTextView);
-        joystick = (JoystickView) findViewById(R.id.JoystickView);
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        Log.d(TAG, "Try to bindService=" + bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE));
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        angleTextView = (TextView) findViewById(R.id.angleTextViewLeft);
+        powerTextView = (TextView) findViewById(R.id.powerTextViewLeft);
+        joystick = (JoystickView) findViewById(R.id.JoystickViewLeft);
+        joystick.setYisAutoCenter(false);
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
             @Override
             public void onValueChanged(int xPosition, int yPosition) {
-                angleTextView.setText("xPosition:" + String.valueOf(xPosition) + "°");
-                powerTextView.setText("yPosition:" + String.valueOf(yPosition) + "%");
+                angleTextView.setText("xPosition:" + String.valueOf(xPosition) + "    ");
+                powerTextView.setText("yPosition:" + String.valueOf(yPosition) + "    ");
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
     }
@@ -62,34 +68,49 @@ public class QuadcopterControllerActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-
+            Intent intent = new Intent(QuadcopterControllerActivity.this, DeviceScanActivity.class);
+            startActivityForResult(intent,REQUEST_CODE);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent){
+        if(requestCode == 1 && resultCode == 1){
+            mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+            mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+            mBluetoothLeService.connect(mDeviceAddress);
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        /*registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
-        }*/
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(mGattUpdateReceiver);
-        unbindService(mServiceConnection);
+        //unregisterReceiver(mGattUpdateReceiver);
+       // unbindService(mServiceConnection);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //this.unregisterReceiver(mGattUpdateReceiver);
-        //unbindService(mServiceConnection);
+        this.unregisterReceiver(mGattUpdateReceiver);
+        unbindService(mServiceConnection);
+        if(mConnected)
+        {
+            mBluetoothLeService.disconnect();
+            mConnected = false;
+        }
         if(mBluetoothLeService != null)
         {
             mBluetoothLeService.close();
@@ -139,6 +160,7 @@ public class QuadcopterControllerActivity extends Activity {
             }else if(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) //可以开始干活了
             {
                 mConnected = true;
+                ShowDialog();
                 Log.e(TAG, "In what we need");
                 invalidateOptionsMenu();
             }else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) { //收到数据
@@ -155,6 +177,10 @@ public class QuadcopterControllerActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothDevice.ACTION_UUID);
         return intentFilter;
+    }
+    private void ShowDialog()
+    {
+        Toast.makeText(this, "连接成功，现在可以正常通信！", Toast.LENGTH_SHORT).show();
     }
 
 }
