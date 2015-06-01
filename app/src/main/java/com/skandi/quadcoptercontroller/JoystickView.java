@@ -4,6 +4,8 @@ package com.skandi.quadcoptercontroller;
  * Created by Skandi on 2015/5/20.
  */
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -31,11 +33,15 @@ public class JoystickView extends View implements Runnable {
     private int yPosition = 0; // Touch y position
     private double centerX = 0; // Center view x position
     private double centerY = 0; // Center view y position
-    private Paint mainCircle;
+/*    private Paint mainCircle;
     private Paint secondaryCircle;
     private Paint button;
     private Paint horizontalLine;
-    private Paint verticalLine;
+    private Paint verticalLine;*/
+    private Bitmap joystick;
+    private Bitmap joystickStick;
+    private Bitmap joystick_orginal;
+    private Bitmap joystickStick_orginal;
     private int joystickRadius;
     private int buttonRadius;
     private int lastAngle = 0;
@@ -60,7 +66,7 @@ public class JoystickView extends View implements Runnable {
     }
 
     protected void initJoystickView() {
-        mainCircle = new Paint(Paint.ANTI_ALIAS_FLAG);
+       /* mainCircle = new Paint(Paint.ANTI_ALIAS_FLAG);
         mainCircle.setColor(Color.WHITE);
         mainCircle.setStyle(Paint.Style.FILL_AND_STROKE);
 
@@ -78,7 +84,11 @@ public class JoystickView extends View implements Runnable {
 
         button = new Paint(Paint.ANTI_ALIAS_FLAG);
         button.setColor(Color.RED);
-        button.setStyle(Paint.Style.FILL);
+        button.setStyle(Paint.Style.FILL);*/
+        joystick_orginal = BitmapFactory.decodeResource(getResources(), R.mipmap.joystick);
+        joystickStick_orginal = BitmapFactory.decodeResource(getResources(), R.mipmap.joystick_stick);
+
+
     }
 
     @Override
@@ -93,8 +103,9 @@ public class JoystickView extends View implements Runnable {
         yPosition = (int) getHeight() / 2;
         int d = Math.min(xNew, yNew);
         buttonRadius = (int) (d / 2 * 0.25);
-        joystickRadius = (int) (d / 2 * 0.75);
-
+        joystickRadius = (int) (d / 2 * 0.9 );
+        joystick = Bitmap.createScaledBitmap(joystick_orginal, joystickRadius*2, joystickRadius*2, false);
+        joystickStick = Bitmap.createScaledBitmap(joystickStick_orginal, buttonRadius*2, buttonRadius*2, false);
     }
 
     @Override
@@ -131,7 +142,7 @@ public class JoystickView extends View implements Runnable {
         centerX = (getWidth()) / 2;
         centerY = (getHeight()) / 2;
 
-        // painting the main circle
+/*        // painting the main circle
         canvas.drawCircle((int) centerX, (int) centerY, joystickRadius,
                 mainCircle);
         // painting the secondary circle
@@ -147,7 +158,9 @@ public class JoystickView extends View implements Runnable {
                 (float) centerX, (float) centerY, horizontalLine);
 
         // painting the move button
-        canvas.drawCircle(xPosition, yPosition, buttonRadius, button);
+        canvas.drawCircle(xPosition, yPosition, buttonRadius, button);*/
+        canvas.drawBitmap(joystick,(float)(centerX-joystickRadius),(float)(centerY-joystickRadius),null);
+        canvas.drawBitmap(joystickStick,(float)(xPosition-buttonRadius),(float)(yPosition-buttonRadius),null);
     }
 
     @Override
@@ -160,10 +173,10 @@ public class JoystickView extends View implements Runnable {
             xPosition = (int) ((xPosition - centerX) * joystickRadius / abs + centerX);
             yPosition = (int) ((yPosition - centerY) * joystickRadius / abs + centerY);
         }*/
-        if(xPosition-centerX > joystickRadius) xPosition = (int)centerX + joystickRadius;
-        if(xPosition-centerX < joystickRadius*-1) xPosition = (int)centerX - joystickRadius;
-        if(yPosition-centerY > joystickRadius) yPosition = (int)centerY + joystickRadius;
-        if(yPosition-centerY < joystickRadius*-1) yPosition = (int)centerY - joystickRadius;
+        if(xPosition-centerX > joystickRadius-buttonRadius) xPosition = (int)centerX + joystickRadius - buttonRadius;
+        if(xPosition-centerX < (joystickRadius-buttonRadius)*-1) xPosition = (int)centerX - joystickRadius + buttonRadius;
+        if(yPosition-centerY > joystickRadius-buttonRadius) yPosition = (int)centerY + joystickRadius - buttonRadius;
+        if(yPosition-centerY < (joystickRadius-buttonRadius)*-1) yPosition = (int)centerY - joystickRadius + buttonRadius;
         invalidate();
         if (event.getAction() == MotionEvent.ACTION_UP) {
             if(XisAutoCenter) xPosition = (int) centerX;
@@ -172,7 +185,7 @@ public class JoystickView extends View implements Runnable {
             if (onJoystickMoveListener != null)
 //                onJoystickMoveListener.onValueChanged(getAngle(), getPower(),
 //                        getDirection());
-                onJoystickMoveListener.onValueChanged(xPosition-(int)centerX,yPosition-(int)centerY);
+                onJoystickMoveListener.onValueChanged((int)((xPosition-centerX)/(joystickRadius-buttonRadius)*100),(int)((yPosition-centerY)/(joystickRadius-buttonRadius)*-100));
         }
         if (onJoystickMoveListener != null
                 && event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -184,7 +197,7 @@ public class JoystickView extends View implements Runnable {
             if (onJoystickMoveListener != null)
 //                onJoystickMoveListener.onValueChanged(getAngle(), getPower(),
 //                        getDirection());
-                onJoystickMoveListener.onValueChanged(xPosition-(int)centerX,yPosition-(int)centerY);
+                onJoystickMoveListener.onValueChanged((int)((xPosition-centerX)/(joystickRadius-buttonRadius)*100),(int)((yPosition-centerY)/(joystickRadius-buttonRadius)*-100));
         }
         return true;
     }
@@ -283,7 +296,7 @@ public class JoystickView extends View implements Runnable {
                     if (onJoystickMoveListener != null)
 //                        onJoystickMoveListener.onValueChanged(getAngle(),
 //                                getPower(), getDirection());
-                            onJoystickMoveListener.onValueChanged(xPosition-(int)centerX,yPosition-(int)centerY);
+                            onJoystickMoveListener.onValueChanged((int)((xPosition-centerX)/(joystickRadius-buttonRadius)*100),(int)((yPosition-centerY)/(joystickRadius-buttonRadius)*-100));
                 }
             });
             try {

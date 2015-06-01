@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Bundle;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,15 +21,24 @@ import android.widget.Toast;
 public class QuadcopterControllerActivity extends Activity {
     private TextView angleTextView;
     private TextView powerTextView;
-    private JoystickView joystick;
+    private JoystickView leftJoystick;
+    private JoystickView rightJoystick;
     private final static String TAG = QuadcopterControllerActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     public static final int REQUEST_CODE = 1;
+    public static final int LEFT_XPOSITION = 3;
+    public static final int LEFT_YPOSITION = 0;
+    public static final int RIGHT_XPOSITION = 1;
+    public static final int RIGHT_YPOSITION = 2;
+    public static final int LEFT_RADIO = 5;
+    public static final int RIGHT_RADIO = 4;
+
 
     private String mDeviceName;
     private String mDeviceAddress;
+    private ControlFrame frame;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
 
@@ -36,18 +46,31 @@ public class QuadcopterControllerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quadcopter_controller);
+        frame = new ControlFrame();
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         Log.d(TAG, "Try to bindService=" + bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE));
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        angleTextView = (TextView) findViewById(R.id.angleTextViewLeft);
-        powerTextView = (TextView) findViewById(R.id.powerTextViewLeft);
-        joystick = (JoystickView) findViewById(R.id.JoystickViewLeft);
-        joystick.setYisAutoCenter(false);
-        joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
+        angleTextView = (TextView) findViewById(R.id.xPosition);
+        leftJoystick = (JoystickView) findViewById(R.id.leftJoystickView);
+        leftJoystick.setYisAutoCenter(false);
+        leftJoystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
             @Override
             public void onValueChanged(int xPosition, int yPosition) {
-                angleTextView.setText("xPosition:" + String.valueOf(xPosition) + "    ");
-                powerTextView.setText("yPosition:" + String.valueOf(yPosition) + "    ");
+                frame.setValue(xPosition, LEFT_XPOSITION);
+                frame.setValue(yPosition, LEFT_YPOSITION);
+                String tmp = "";
+                for(byte x : frame.getBytes()){
+                    tmp += Integer.toHexString(x&0xff).toUpperCase()+" ";
+                }
+                angleTextView.setText(tmp);
+            }
+        }, JoystickView.DEFAULT_LOOP_INTERVAL);
+        rightJoystick = (JoystickView) findViewById(R.id.rightJoystickView);
+        rightJoystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
+            @Override
+            public void onValueChanged(int xPosition, int yPosition) {
+                frame.setValue(xPosition, RIGHT_XPOSITION);
+                frame.setValue(yPosition, RIGHT_YPOSITION);
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
     }
@@ -161,6 +184,7 @@ public class QuadcopterControllerActivity extends Activity {
             {
                 mConnected = true;
                 ShowDialog();
+
                 Log.e(TAG, "In what we need");
                 invalidateOptionsMenu();
             }else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) { //收到数据
