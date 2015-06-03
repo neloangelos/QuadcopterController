@@ -5,31 +5,62 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".QuadcopterControllerActivity">
+    <RadioGroup
+        android:id = "@+id/leftRadio"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop = "true">
+        <RadioButton
+            android:id = "@+id/leftRadioButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            />
+        <RadioButton
+            android:id="@+id/leftRadioButton2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+        </RadioGroup>
 
-    <TextView
-        android:id = "@+id/xPosition"
-        android:layout_width = "wrap_content"
-        android:layout_height = "wrap_content"
+    <RadioGroup
+        android:id = "@+id/rightRadio"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop = "true"
-        />
-    <TextView
-        android:id = "@+id/yPosition"
-        android:layout_width = "wrap_content"
-        android:layout_height = "wrap_content"
-        android:layout_alignParentTop = "true"
-        android:layout_toRightOf="@id/xPosition"
-        />
+        android:layout_toRightOf="@id/leftRadio">
+        <RadioButton
+            android:id = "@+id/rightRadioButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            />
+        <RadioButton
+            android:id="@+id/rightRadioButton2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+        <RadioButton
+            android:id="@+id/rightRadioButton3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+    </RadioGroup>
+
+
 
 
     <com.skandi.quadcoptercontroller.JoystickView
         android:id = "@+id/leftJoystickView"
-        android:layout_below="@id/xPosition"
+        android:layout_below="@id/leftRadio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
     <com.skandi.quadcoptercontroller.JoystickView
         android:id = "@+id/rightJoystickView"
-        android:layout_below="@id/yPosition"
+        android:layout_below="@id/rightRadio"
         android:layout_toRightOf="@id/leftJoystickView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

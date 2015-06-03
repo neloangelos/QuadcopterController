@@ -13,6 +13,12 @@ public class ControlFrame {
         frame[0] = FRAME_HEADER_P1;
         frame[1] = FRAME_HEADER_P2;
         //ch7 is not used
+        setValue(171,0); // ch1
+        for(int i = 1; i < 4; i++ ){
+            setValue(512,i); //ch2~ch4
+        }
+        setValue(171,4);  //ch5
+        setValue(171,5);  //ch6
         frame[14] = (byte)0xff;
         frame[15] = (byte)0xff;
     }

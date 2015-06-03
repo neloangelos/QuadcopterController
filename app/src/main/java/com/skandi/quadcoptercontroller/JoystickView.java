@@ -40,14 +40,15 @@ public class JoystickView extends View implements Runnable {
     private Paint verticalLine;*/
     private Bitmap joystick;
     private Bitmap joystickStick;
-    private Bitmap joystick_orginal;
-    private Bitmap joystickStick_orginal;
+    private Bitmap joystick_original;
+    private Bitmap joystickStick_original;
     private int joystickRadius;
     private int buttonRadius;
     private int lastAngle = 0;
     private int lastPower = 0;
-
-
+    private int initX = 0;
+    private int initY = 0;
+    private boolean setInitPosition = false;
     private boolean XisAutoCenter = true;
     private boolean YisAutoCenter = true;
 
@@ -85,8 +86,8 @@ public class JoystickView extends View implements Runnable {
         button = new Paint(Paint.ANTI_ALIAS_FLAG);
         button.setColor(Color.RED);
         button.setStyle(Paint.Style.FILL);*/
-        joystick_orginal = BitmapFactory.decodeResource(getResources(), R.mipmap.joystick);
-        joystickStick_orginal = BitmapFactory.decodeResource(getResources(), R.mipmap.joystick_stick);
+        joystick_original = BitmapFactory.decodeResource(getResources(), R.mipmap.joystick);
+        joystickStick_original = BitmapFactory.decodeResource(getResources(), R.mipmap.joystick_stick);
 
 
     }
@@ -99,13 +100,20 @@ public class JoystickView extends View implements Runnable {
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld) {
         super.onSizeChanged(xNew, yNew, xOld, yOld);
         // before measure, get the center of view
-        xPosition = (int) getWidth() / 2;
-        yPosition = (int) getHeight() / 2;
+        centerX = (getWidth()) / 2;
+        centerY = (getHeight()) / 2;
         int d = Math.min(xNew, yNew);
         buttonRadius = (int) (d / 2 * 0.25);
         joystickRadius = (int) (d / 2 * 0.9 );
-        joystick = Bitmap.createScaledBitmap(joystick_orginal, joystickRadius*2, joystickRadius*2, false);
-        joystickStick = Bitmap.createScaledBitmap(joystickStick_orginal, buttonRadius*2, buttonRadius*2, false);
+        if(setInitPosition){
+            xPosition = (int)(initX * (joystickRadius-buttonRadius) / 100 + centerX);
+            yPosition = (int)(initY * (joystickRadius-buttonRadius) / -100 + centerY);
+        }else{
+            xPosition = (int) getWidth() / 2;
+            yPosition = (int) getHeight() / 2;
+        }
+        joystick = Bitmap.createScaledBitmap(joystick_original, joystickRadius*2, joystickRadius*2, false);
+        joystickStick = Bitmap.createScaledBitmap(joystickStick_original, buttonRadius*2, buttonRadius*2, false);
     }
 
     @Override
@@ -209,6 +217,11 @@ public class JoystickView extends View implements Runnable {
 
     public void setYisAutoCenter(boolean yisAutoCenter) {
         YisAutoCenter = yisAutoCenter;
+    }
+    public void setInitPosition(int x, int y){
+        initX = x;
+        initY = y;
+        setInitPosition = true;
     }
 
     private int getAngle() {

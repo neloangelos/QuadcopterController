@@ -1,5 +1,6 @@
 package com.skandi.quadcoptercontroller;
-
+import java.util.Timer;
+import java.util.TimerTask;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -14,15 +15,16 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
 public class QuadcopterControllerActivity extends Activity {
-    private TextView angleTextView;
-    private TextView powerTextView;
     private JoystickView leftJoystick;
     private JoystickView rightJoystick;
+    private RadioGroup leftRadioGroup;
+    private RadioGroup rightRadioGroup;
     private final static String TAG = QuadcopterControllerActivity.class.getSimpleName();
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -50,29 +52,44 @@ public class QuadcopterControllerActivity extends Activity {
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         Log.d(TAG, "Try to bindService=" + bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE));
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        angleTextView = (TextView) findViewById(R.id.xPosition);
         leftJoystick = (JoystickView) findViewById(R.id.leftJoystickView);
         leftJoystick.setYisAutoCenter(false);
+        leftJoystick.setInitPosition(0, -100);
         leftJoystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
             @Override
             public void onValueChanged(int xPosition, int yPosition) {
-                frame.setValue(xPosition, LEFT_XPOSITION);
-                frame.setValue(yPosition, LEFT_YPOSITION);
-                String tmp = "";
-                for(byte x : frame.getBytes()){
-                    tmp += Integer.toHexString(x&0xff).toUpperCase()+" ";
-                }
-                angleTextView.setText(tmp);
+                frame.setValue(scale(xPosition), LEFT_XPOSITION);
+                frame.setValue(scale(yPosition), LEFT_YPOSITION);
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
         rightJoystick = (JoystickView) findViewById(R.id.rightJoystickView);
         rightJoystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
             @Override
             public void onValueChanged(int xPosition, int yPosition) {
-                frame.setValue(xPosition, RIGHT_XPOSITION);
-                frame.setValue(yPosition, RIGHT_YPOSITION);
+                frame.setValue(scale(xPosition), RIGHT_XPOSITION);
+                frame.setValue(scale(yPosition), RIGHT_YPOSITION);
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
+        leftRadioGroup = (RadioGroup) findViewById(R.id.leftRadio);
+        leftRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.leftRadioButton1) frame.setValue(171, LEFT_RADIO);
+                else frame.setValue(853, LEFT_RADIO);
+            }
+        });
+        rightRadioGroup = (RadioGroup) findViewById(R.id.rightRadio);
+        rightRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if(checkedId == R.id.rightRadioButton1) frame.setValue(171,RIGHT_RADIO);
+                else if (checkedId == R.id.rightRadioButton2) frame.setValue(512,RIGHT_RADIO);
+                else frame.setValue(853,RIGHT_RADIO);
+            }
+        });
+    }
+    public int scale (int x){
+        return (int)(x*3.41+512);
     }
 
     @Override
@@ -184,7 +201,13 @@ public class QuadcopterControllerActivity extends Activity {
             {
                 mConnected = true;
                 ShowDialog();
-
+                Timer mTimer = new Timer();
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        mBluetoothLeService.WriteValue(frame.getBytes());
+                    }
+                },22);
                 Log.e(TAG, "In what we need");
                 invalidateOptionsMenu();
             }else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) { //收到数据
