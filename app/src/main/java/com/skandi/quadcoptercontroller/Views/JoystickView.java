@@ -1,4 +1,4 @@
-package com.skandi.quadcoptercontroller;
+package com.skandi.quadcoptercontroller.Views;
 
 /**
  * Created by Skandi on 2015/5/20.
@@ -12,6 +12,8 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.skandi.quadcoptercontroller.R;
 
 public class JoystickView extends View implements Runnable {
     // Constants
